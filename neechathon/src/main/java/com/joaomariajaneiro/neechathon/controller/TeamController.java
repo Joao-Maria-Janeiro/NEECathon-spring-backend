@@ -1,5 +1,7 @@
 package com.joaomariajaneiro.neechathon.controller;
 
+import com.auth0.jwt.JWT;
+import com.auth0.jwt.algorithms.Algorithm;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.joaomariajaneiro.neechathon.dao.SimpleTeam;
@@ -8,6 +10,7 @@ import com.joaomariajaneiro.neechathon.model.User;
 import com.joaomariajaneiro.neechathon.repository.ProjectRepository;
 import com.joaomariajaneiro.neechathon.repository.TeamRepository;
 import com.joaomariajaneiro.neechathon.repository.UserRepository;
+import com.joaomariajaneiro.neechathon.security.JwtProperties;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -15,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @RequestMapping("/teams")
@@ -67,6 +71,40 @@ public class TeamController {
             ((ArrayList<SimpleTeam>) teams).add(simpleTeam);
         }
         return teams;
+    }
+
+    @RequestMapping(value = "/me", method = RequestMethod.GET)
+    public Team getMyTransactions(@RequestHeader Map<String, String> headers) {
+        String token;
+        try {
+            token = headers.get("authorization").replace(JwtProperties.TOKEN_PREFIX, "");
+        } catch (Exception e) {
+            return null;
+        }
+
+        String email;
+        try {
+            email = JWT.require(Algorithm.HMAC256(JwtProperties.SECRET.getBytes()))
+                    .build()
+                    .verify(token)
+                    .getSubject();
+        } catch (Exception e) {
+            return null;
+        }
+
+        User user;
+
+        try {
+            user = userRepository.findByEmail(email);
+        } catch (Exception e) {
+            return null;
+        }
+
+        try {
+            return user.getTeam();
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     @RequestMapping(value = "/create", method = RequestMethod.POST)
