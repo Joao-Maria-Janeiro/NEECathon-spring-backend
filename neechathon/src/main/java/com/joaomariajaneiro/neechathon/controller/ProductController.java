@@ -2,7 +2,6 @@ package com.joaomariajaneiro.neechathon.controller;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.ImmutableList;
 import com.joaomariajaneiro.neechathon.model.Product;
 import com.joaomariajaneiro.neechathon.model.User;
 import com.joaomariajaneiro.neechathon.repository.ProductRepository;
@@ -32,23 +31,7 @@ public class ProductController {
     @RequestMapping(value = "/", method = RequestMethod.GET)
     public @ResponseBody
     Iterable<Product> getAllProducts(@RequestHeader Map<String, String> headers) {
-
-        User user;
-        try {
-            user = userService.getUserFromToken(headers);
-        } catch (Exception e) {
-            return ImmutableList.of();
-        }
-
-        if (user == null) {
-            return ImmutableList.of();
-        }
-
-        if (user.getTeam().isAdmin()) {
-            return productRepository.findAll();
-        } else {
-            return ImmutableList.of();
-        }
+        return productRepository.findAll();
     }
 
     @RequestMapping(value = "/create", method = RequestMethod.POST)
