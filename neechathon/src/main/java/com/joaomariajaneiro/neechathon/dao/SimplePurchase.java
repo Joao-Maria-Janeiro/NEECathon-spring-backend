@@ -1,42 +1,34 @@
-package com.joaomariajaneiro.neechathon.model;
+package com.joaomariajaneiro.neechathon.dao;
 
-import javax.persistence.*;
+import com.joaomariajaneiro.neechathon.model.Product;
+
 import java.time.LocalDateTime;
 
-@Entity
-@Table(name = "PURCHASE")
-public class Purchase {
+public class SimplePurchase {
 
-    @Id
-    @Column(name = "PURCHASE_ID")
-    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
-    @Column(name = "PURCHASE_TEAM")
     private String teamName;
 
-    @ManyToOne
     private Product product;
 
-    @Column(name = "PURCHASE_QUANTITY")
     private Long quantity;
 
-    @Column(name = "PURCHASE_AMOUNT")
     private Long totalAmount;
 
-    @ManyToOne
-    private User user;
+    private String user;
 
-    @Column(name = "PURCHASE_SOURCE_TEAM_CASH")
     private Long sourceTeamCash;
 
-    @Column(name = "PURCHASE_TIMESTAMP")
     private LocalDateTime timestamp;
 
-    public Purchase() {
+    public SimplePurchase() {
     }
 
-    public Purchase(String teamName, Product product, Long quantity, Long totalAmount, User user, Long sourceTeamCash, LocalDateTime timestamp) {
+    public SimplePurchase(Long id, String teamName, Product product, Long quantity,
+                          Long totalAmount, String user, Long sourceTeamCash,
+                          LocalDateTime timestamp) {
+        this.id = id;
         this.teamName = teamName;
         this.product = product;
         this.quantity = quantity;
@@ -46,15 +38,11 @@ public class Purchase {
         this.timestamp = timestamp;
     }
 
-    public Long getId() {
-        return id;
-    }
-
     public String getTeamName() {
         return teamName;
     }
 
-    public Purchase setTeamName(String teamName) {
+    public SimplePurchase setTeamName(String teamName) {
         this.teamName = teamName;
         return this;
     }
@@ -63,7 +51,7 @@ public class Purchase {
         return product;
     }
 
-    public Purchase setProduct(Product product) {
+    public SimplePurchase setProduct(Product product) {
         this.product = product;
         return this;
     }
@@ -72,7 +60,7 @@ public class Purchase {
         return quantity;
     }
 
-    public Purchase setQuantity(Long quantity) {
+    public SimplePurchase setQuantity(Long quantity) {
         this.quantity = quantity;
         return this;
     }
@@ -81,16 +69,16 @@ public class Purchase {
         return totalAmount;
     }
 
-    public Purchase setTotalAmount(Long totalAmount) {
+    public SimplePurchase setTotalAmount(Long totalAmount) {
         this.totalAmount = totalAmount;
         return this;
     }
 
-    public User getUser() {
+    public String getUser() {
         return user;
     }
 
-    public Purchase setUser(User user) {
+    public SimplePurchase setUser(String user) {
         this.user = user;
         return this;
     }
@@ -99,7 +87,7 @@ public class Purchase {
         return sourceTeamCash;
     }
 
-    public Purchase setSourceTeamCash(Long sourceTeamCash) {
+    public SimplePurchase setSourceTeamCash(Long sourceTeamCash) {
         this.sourceTeamCash = sourceTeamCash;
         return this;
     }
@@ -108,7 +96,7 @@ public class Purchase {
         return timestamp;
     }
 
-    public Purchase setTimestamp(LocalDateTime timestamp) {
+    public SimplePurchase setTimestamp(LocalDateTime timestamp) {
         this.timestamp = timestamp;
         return this;
     }

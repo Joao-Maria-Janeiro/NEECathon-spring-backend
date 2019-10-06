@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,6 +30,10 @@ public class ImportSampleData implements ImportData {
 
     @Autowired
     private ProductRepository productRepository;
+
+    @Autowired
+    private PurchaseRepository purchaseRepository;
+
 
     private PasswordEncoder passwordEncoder;
 
@@ -67,18 +72,18 @@ public class ImportSampleData implements ImportData {
         team1.setAdmin(true);
         teamRepository.save(team1);
 
-        List<Product> products = new ArrayList<>();
-        Product coil = new Product().setName("Coil").setPrice(20L);
-        Product capacitor = new Product().setName("Capacitor").setPrice(20L);
-        Product resistor = new Product().setName("Resistor").setPrice(5L);
-        Product lightSensor = new Product().setName("Light Sensor").setPrice(10L);
-
-        products.add(coil);
-        products.add(capacitor);
-        products.add(resistor);
-        products.add(lightSensor);
-
-        productRepository.saveAll(products);
+//        List<Product> products = new ArrayList<>();
+//        Product coil = new Product().setName("Coil").setPrice(20L);
+//        Product capacitor = new Product().setName("Capacitor").setPrice(20L);
+//        Product resistor = new Product().setName("Resistor").setPrice(5L);
+//        Product lightSensor = new Product().setName("Light Sensor").setPrice(10L);
+//
+//        products.add(coil);
+//        products.add(capacitor);
+//        products.add(resistor);
+//        products.add(lightSensor);
+//
+//        productRepository.saveAll(products);
 
 
         Team team2 = new Team();
@@ -132,12 +137,12 @@ public class ImportSampleData implements ImportData {
         team3.setProject(project3);
         teamRepository.save(team3);
 
-        Transaction transaction = new Transaction();
-        transaction.setDescription("TEST").setAmount(20L);
-//        transactionRepository.save(transaction);
 
         team1.setTransactions(ImmutableList.of(transactionRepository.save(new Transaction().setDescription("TEST").setAmount(20L).setSourceTeam("FIRST").setDestTeamName("THIRD"))));
         team3.setTransactions(ImmutableList.of(transactionRepository.save(new Transaction().setDescription("TEST").setAmount(20L).setSourceTeam("FIRST").setDestTeamName("THIRD"))));
+        team1.setPurchases(ImmutableList.of(
+                purchaseRepository.save(new Purchase().setProduct(productRepository.save(new Product().setName("COIL").setPrice(20L).setQuantity(5).setDescription("SIMPLE COIL").setImage_path("random")))
+                        .setQuantity(5L).setSourceTeamCash(team1.getCash()).setTeamName(team1.getName()).setTimestamp(LocalDateTime.now()).setTotalAmount(5L * 20L).setUser(user1))));
         teamRepository.save(team1);
         teamRepository.save(team3);
 
