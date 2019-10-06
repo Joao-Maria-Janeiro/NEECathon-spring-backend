@@ -1,6 +1,8 @@
 package com.joaomariajaneiro.neechathon.model;
 
 import javax.persistence.*;
+import java.time.LocalDateTime;
+import java.util.Date;
 
 @Entity
 @Table(name = "TRANSACTION")
@@ -23,14 +25,45 @@ public class Transaction {
     @Column(name = "TRANSACTION_DESCRIPTION")
     private String description;
 
+    @Column(name = "TRANSACTION_USER")
+    private User user;
+
+    @Column(name = "TRANSACTION_SOURCE_TEAM_CASH")
+    private Long sourceTeamCash;
+
+    @Column(name = "PURCHASE_TIMESTAMP")
+    private LocalDateTime timestamp;
+
     public Transaction() {
     }
 
-    public Transaction(String sourceTeam, String destTeamName, Long amount, String description) {
+    public Transaction(String sourceTeam, String destTeamName, Long amount, String description,
+                       User user, Long sourceTeamCash, LocalDateTime timestamp) {
         this.sourceTeam = sourceTeam;
         this.destTeamName = destTeamName;
         this.amount = amount;
         this.description = description;
+        this.user = user;
+        this.sourceTeamCash = sourceTeamCash;
+        this.timestamp = timestamp;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public Transaction setUser(User user) {
+        this.user = user;
+        return this;
+    }
+
+    public Long getSourceTeamCash() {
+        return sourceTeamCash;
+    }
+
+    public Transaction setSourceTeamCash(Long sourceTeamCash) {
+        this.sourceTeamCash = sourceTeamCash;
+        return this;
     }
 
     public String getDescription() {
@@ -75,6 +108,15 @@ public class Transaction {
 
     public Transaction setAmount(Long amount) {
         this.amount = amount;
+        return this;
+    }
+
+    public LocalDateTime getTimestamp() {
+        return timestamp;
+    }
+
+    public Transaction setTimestamp(LocalDateTime timestamp) {
+        this.timestamp = timestamp;
         return this;
     }
 }

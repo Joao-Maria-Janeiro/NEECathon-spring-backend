@@ -33,9 +33,25 @@ public class Team {
     @JoinColumn(name = "TEAM_ID")
     private List<Transaction> transactions;
 
+    @OneToMany
+    @JoinColumn(name = "TEAM_ID")
+    private List<Purchase> purchases;
+
     @OneToOne
     private Project project;
 
+    @Column(name = "TEAM_IS_ADMIN")
+    private Boolean isAdmin;
+
+
+    public Boolean isAdmin() {
+        return isAdmin;
+    }
+
+    public Team setAdmin(Boolean admin) {
+        isAdmin = admin;
+        return this;
+    }
 
     public Team() {
         this.transactions = new ArrayList<>();
@@ -43,12 +59,26 @@ public class Team {
         this.cash = 200L;
     }
 
-    public Team(String name, Long cash, List<User> users, List<Transaction> transactions, Project project) {
+    public Team(String name, Long cash, List<User> users, List<Transaction> transactions,
+                List<Purchase> purchases, Project project) {
         this.name = name;
+        this.purchases = purchases;
         this.cash = 200L;
         this.users = users;
         this.transactions = transactions;
         this.project = project;
+        this.isAdmin = false;
+    }
+
+    public Team(String name, Long cash, List<User> users, List<Transaction> transactions,
+                List<Purchase> purchases, Project project, Boolean isAdmin) {
+        this.name = name;
+        this.purchases = purchases;
+        this.cash = 200L;
+        this.users = users;
+        this.transactions = transactions;
+        this.project = project;
+        this.isAdmin = isAdmin;
     }
 
     public Long getId() {
@@ -102,6 +132,15 @@ public class Team {
 
     public Team setProject(Project project) {
         this.project = project;
+        return this;
+    }
+
+    public List<Purchase> getPurchases() {
+        return purchases;
+    }
+
+    public Team setPurchases(List<Purchase> purchases) {
+        this.purchases = purchases;
         return this;
     }
 }

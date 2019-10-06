@@ -26,20 +26,16 @@ import static com.auth0.jwt.algorithms.Algorithm.HMAC256;
 public class UserController {
 
 
+    ObjectMapper objectMapper = new ObjectMapper();
     @Autowired
     private ProjectRepository projectRepository;
-
     @Autowired
     private TeamRepository teamRepository;
-
     @Autowired
     private UserRepository userRepository;
 
-    ObjectMapper objectMapper = new ObjectMapper();
-
-
     @RequestMapping(value = "/", method = RequestMethod.GET)
-    public Iterable<User> getAllUsers(){
+    public Iterable<User> getAllUsers() {
         return userRepository.findAll();
     }
 
@@ -102,7 +98,7 @@ public class UserController {
         Team team;
         try {
             team = teamRepository.findByName(teamName);
-        } catch (Exception e){
+        } catch (Exception e) {
             return "That team doesn't exist";
         }
         User user = new User();
@@ -113,12 +109,12 @@ public class UserController {
             return "There was an error creating the user" + e.toString();
         }
 
-        try{
+        try {
             List<User> users = team.getUsers();
             users.add(user);
             team.setUsers(users);
             teamRepository.save(team);
-        }catch (Exception e){
+        } catch (Exception e) {
             userRepository.delete(user);
             return "There was an error trying to create this user";
         }

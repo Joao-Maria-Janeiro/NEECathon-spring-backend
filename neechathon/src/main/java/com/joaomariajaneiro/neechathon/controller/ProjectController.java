@@ -17,32 +17,29 @@ import java.io.IOException;
 @RestController
 public class ProjectController {
 
+    ObjectMapper objectMapper = new ObjectMapper();
     @Autowired
     private ProjectRepository projectRepository;
-
     @Autowired
     private TeamRepository teamRepository;
 
-    ObjectMapper objectMapper = new ObjectMapper();
-
-
     @RequestMapping(value = "/", method = RequestMethod.GET)
-    public Iterable<Project> getAllProjects(){
+    public Iterable<Project> getAllProjects() {
         return projectRepository.findAll();
     }
 
 
     @RequestMapping(value = "/{teamName}", method = RequestMethod.GET)
-    public Project getProjectFromTeamName(@PathVariable String teamName){
+    public Project getProjectFromTeamName(@PathVariable String teamName) {
         Team team;
         try {
             team = teamRepository.findByName(teamName);
-        }catch (Exception e){
+        } catch (Exception e) {
             return null;
         }
         try {
             return team.getProject();
-        }catch (Exception e){
+        } catch (Exception e) {
             return null;
         }
     }
@@ -53,28 +50,28 @@ public class ProjectController {
         String title = "";
         try {
             title = jsonNode.get("title").asText();
-        }catch (Exception e){
+        } catch (Exception e) {
             return "You need to provide a title";
         }
 
         String description = "";
         try {
             title = jsonNode.get("description").asText();
-        }catch (Exception e){
+        } catch (Exception e) {
             return "You need to provide a description";
         }
 
         String gitHubURL = "";
         try {
             gitHubURL = jsonNode.get("gitHubURL").asText();
-        }catch (Exception e){
+        } catch (Exception e) {
             return "You need to provide a URL for the GitHub project";
         }
 
         String teamName = "";
         try {
             teamName = jsonNode.get("teamName").asText();
-        }catch (Exception e){
+        } catch (Exception e) {
             return "You need to provide the team name";
         }
 
@@ -83,10 +80,9 @@ public class ProjectController {
         team.setProject(null);
         try {
             projectRepository.delete(teamProj);
-        }catch (Exception e){
+        } catch (Exception e) {
             System.out.println("-");
         }
-
 
 
         Project project = new Project();

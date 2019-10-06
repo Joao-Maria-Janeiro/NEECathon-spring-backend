@@ -1,16 +1,15 @@
 package com.joaomariajaneiro.neechathon.controller;
 
-import com.auth0.jwt.JWT;
-import com.auth0.jwt.algorithms.Algorithm;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.ImmutableList;
 import com.joaomariajaneiro.neechathon.dao.SimpleTeam;
 import com.joaomariajaneiro.neechathon.model.Team;
 import com.joaomariajaneiro.neechathon.model.User;
 import com.joaomariajaneiro.neechathon.repository.ProjectRepository;
 import com.joaomariajaneiro.neechathon.repository.TeamRepository;
 import com.joaomariajaneiro.neechathon.repository.UserRepository;
-import com.joaomariajaneiro.neechathon.security.JwtProperties;
+import com.joaomariajaneiro.neechathon.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -25,29 +24,47 @@ import java.util.Map;
 @RestController
 public class TeamController {
 
+    ObjectMapper objectMapper = new ObjectMapper();
     @Autowired
     private TeamRepository teamRepository;
-
     @Autowired
     private UserRepository userRepository;
-
     @Autowired
     private ProjectRepository projectRepository;
-
-    ObjectMapper objectMapper = new ObjectMapper();
+    @Autowired
+    private UserService userService;
 
     @RequestMapping(value = "/", method = RequestMethod.GET)
-    public @ResponseBody Iterable<Team> getAllTeams(){
-        return teamRepository.findAll();
+    public @ResponseBody
+    Iterable<Team> getAllTeams(@RequestHeader Map<String, String> headers) {
+        User user;
+        try {
+            user = userService.getUserFromToken(headers);
+        } catch (Exception e) {
+            return ImmutableList.of();
+        }
+
+        if (user == null) {
+            return ImmutableList.of();
+        }
+
+        if (user.getTeam().isAdmin()) {
+            return teamRepository.findAll();
+        } else {
+            return ImmutableList.of();
+        }
+
     }
 
     @RequestMapping(value = "/{teamName}", method = RequestMethod.GET)
-    public @ResponseBody Team getTeam(@PathVariable String teamName){
+    public @ResponseBody
+    Team getTeam(@PathVariable String teamName) {
         return teamRepository.findByName(teamName);
     }
 
     @RequestMapping(value = "/simple", method = RequestMethod.GET)
-    public @ResponseBody Iterable<SimpleTeam> getTeamsSimple() {
+    public @ResponseBody
+    Iterable<SimpleTeam> getTeamsSimple() {
         Iterable<SimpleTeam> teams = new ArrayList<>();
         int i = 0;
         int j = 1;
@@ -75,28 +92,14 @@ public class TeamController {
 
     @RequestMapping(value = "/me", method = RequestMethod.GET)
     public Team getMyTransactions(@RequestHeader Map<String, String> headers) {
-        String token;
-        try {
-            token = headers.get("authorization").replace(JwtProperties.TOKEN_PREFIX, "");
-        } catch (Exception e) {
-            return null;
-        }
-
-        String email;
-        try {
-            email = JWT.require(Algorithm.HMAC256(JwtProperties.SECRET.getBytes()))
-                    .build()
-                    .verify(token)
-                    .getSubject();
-        } catch (Exception e) {
-            return null;
-        }
-
         User user;
-
         try {
-            user = userRepository.findByEmail(email);
+            user = userService.getUserFromToken(headers);
         } catch (Exception e) {
+            return null;
+        }
+
+        if (user == null) {
             return null;
         }
 
@@ -107,6 +110,12 @@ public class TeamController {
         }
     }
 
+//    @RequestMapping(value = "/update", method = RequestMethod.POST)
+//    public String updateTeam(@RequestBody String payload) throws IOException {
+//        JsonNode jsonNode = objectMapper.readTree(payload);
+//
+//    }
+
     @RequestMapping(value = "/create", method = RequestMethod.POST)
     public String createTeam(@RequestBody String payload) throws IOException {
         JsonNode jsonNode = objectMapper.readTree(payload);
@@ -114,7 +123,7 @@ public class TeamController {
         String name = "";
         try {
             name = jsonNode.get("name").asText();
-        }catch (Exception e){
+        } catch (Exception e) {
             return "You need to provide a name";
         }
 
@@ -123,27 +132,35 @@ public class TeamController {
         try {
             String user1Name = jsonNode.get("user1").asText();
             users.add(0, userRepository.findByUsername(user1Name));
-        }catch (Exception e){System.out.println("NO USER");}
+        } catch (Exception e) {
+            System.out.println("NO USER");
+        }
 
 
         try {
             String user1Name = jsonNode.get("user2").asText();
             users.add(1, userRepository.findByUsername(user1Name));
-        }catch (Exception e){System.out.println("NO USER");}
+        } catch (Exception e) {
+            System.out.println("NO USER");
+        }
         try {
             String user1Name = jsonNode.get("user3").asText();
             users.add(2, userRepository.findByUsername(user1Name));
-        }catch (Exception e){System.out.println("NO USER");}
+        } catch (Exception e) {
+            System.out.println("NO USER");
+        }
         try {
             String user1Name = jsonNode.get("user4").asText();
             users.add(3, userRepository.findByUsername(user1Name));
-        }catch (Exception e){System.out.println("NO USER");}
+        } catch (Exception e) {
+            System.out.println("NO USER");
+        }
 
         Team team = new Team();
         team.setName(name).setUsers(users);
         teamRepository.save(team);
 
-        for (User user:users ) {
+        for (User user : users) {
             user.setTeam(team);
         }
 

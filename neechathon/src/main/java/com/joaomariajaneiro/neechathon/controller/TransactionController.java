@@ -15,11 +15,13 @@ import com.joaomariajaneiro.neechathon.repository.TeamRepository;
 import com.joaomariajaneiro.neechathon.repository.TransactionRepository;
 import com.joaomariajaneiro.neechathon.repository.UserRepository;
 import com.joaomariajaneiro.neechathon.security.JwtProperties;
+import com.joaomariajaneiro.neechathon.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -43,42 +45,50 @@ public class TransactionController {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private UserService userService;
+
     @RequestMapping(value = "/", method = RequestMethod.GET)
-    public Iterable<SimpleTransaction> getAllTransactions() {
-        List<SimpleTransaction> simpleTransactions = new ArrayList<>();
-        transactionRepository.findAll().forEach((transaction) -> {
-            SimpleTransaction transaction1 = new SimpleTransaction(transaction.getSourceTeam(), transaction.getDestTeamName(), transaction.getDescription(), transaction.getAmount());
-            simpleTransactions.add(
-                    transaction1);
-                }
-        );
-        return simpleTransactions;
+    public Iterable<SimpleTransaction> getAllTransactions(@RequestHeader Map<String,
+            String> headers) {
+        User user;
+        try {
+            user = userService.getUserFromToken(headers);
+        } catch (Exception e) {
+            return ImmutableList.of();
+        }
+
+        if (user == null) {
+            return ImmutableList.of();
+        }
+
+        if (user.getTeam().isAdmin()) {
+            List<SimpleTransaction> simpleTransactions = new ArrayList<>();
+            transactionRepository.findAll().forEach((transaction) -> {
+                        SimpleTransaction transaction1 = new SimpleTransaction(
+                                transaction.getSourceTeam(), transaction.getDestTeamName(),
+                                transaction.getDescription(), transaction.getAmount());
+                        simpleTransactions.add(
+                                transaction1);
+                    }
+            );
+            return simpleTransactions;
+        } else {
+            return ImmutableList.of();
+        }
     }
 
     @RequestMapping(value = "/me", method = RequestMethod.GET)
-    public Iterable<SimpleTransaction> getMyTransactions(@RequestHeader Map<String, String> headers) {
-        String token;
-        try {
-            token = headers.get("authorization").replace(JwtProperties.TOKEN_PREFIX, "");
-        } catch (Exception e) {
-            return ImmutableList.of();
-        }
-
-        String email;
-        try {
-            email = JWT.require(Algorithm.HMAC256(JwtProperties.SECRET.getBytes()))
-                    .build()
-                    .verify(token)
-                    .getSubject();
-        } catch (Exception e) {
-            return ImmutableList.of();
-        }
+    public Iterable<SimpleTransaction> getMyTransactions(@RequestHeader Map<String,
+            String> headers) {
 
         User user;
-
         try {
-            user = userRepository.findByEmail(email);
+            user = userService.getUserFromToken(headers);
         } catch (Exception e) {
+            return ImmutableList.of();
+        }
+        if (user == null) {
             return ImmutableList.of();
         }
 
@@ -90,43 +100,21 @@ public class TransactionController {
             return ImmutableList.of();
         }
 
-
-        List<SimpleTransaction> simpleTransactions = new ArrayList<>();
-        sourceTeam.getTransactions().forEach((transaction) -> {
-                    SimpleTransaction transaction1 = new SimpleTransaction(transaction.getSourceTeam(), transaction.getDestTeamName(), transaction.getDescription(), transaction.getAmount());
-                    simpleTransactions.add(
-                            transaction1);
-                }
-        );
-        return simpleTransactions;
+        return createSimpleTransactionList(sourceTeam.getTransactions());
     }
 
     @RequestMapping(value = "/create", method = RequestMethod.POST)
-    public String createProject(@RequestBody String payload, @RequestHeader Map<String, String> headers) throws IOException {
+    public String createProject(@RequestBody String payload,
+                                @RequestHeader Map<String, String> headers) throws IOException {
         JsonNode jsonNode = objectMapper.readTree(payload);
 
-        String token;
-        try {
-            token = headers.get("authorization").replace(JwtProperties.TOKEN_PREFIX, "");
-        } catch (Exception e) {
-            return "The user is not logged in";
-        }
-
-        String email;
-        try {
-            email = JWT.require(Algorithm.HMAC256(JwtProperties.SECRET.getBytes()))
-                    .build()
-                    .verify(token)
-                    .getSubject();
-        } catch (Exception e) {
-            return "The user is not logged in";
-        }
-
         User user;
-
         try {
-            user = userRepository.findByEmail(email);
+            user = userService.getUserFromToken(headers);
         } catch (Exception e) {
+            return "Bad credentials";
+        }
+        if (user == null) {
             return "Bad credentials";
         }
 
@@ -153,7 +141,7 @@ public class TransactionController {
             return "You must provide a destination team";
         }
 
-        if(destTeamName.trim().equals(sourceTeam.getName().trim())) {
+        if (destTeamName.trim().equals(sourceTeam.getName().trim())) {
             return "You can't do a transaction to your own team!";
         }
 
@@ -179,14 +167,13 @@ public class TransactionController {
             return "You don't have enough money for that transfer, your team currently has: " + sourceTeam.getCash().toString();
         }
 
-        // Update the cash for each team
-        sourceTeam.setCash(sourceTeam.getCash() - value);
-        destTeam.setCash(destTeam.getCash() + value);
+        LocalDateTime timestamp = LocalDateTime.now();
 
         // Add the transaction to the team's transactions
         try {
             List<Transaction> transactions = sourceTeam.getTransactions();
-            transactions.add(transactionRepository.save(new Transaction(sourceTeam.getName(), destTeamName, value, description)));
+            transactions.add(transactionRepository.save(new Transaction(sourceTeam.getName(),
+                    destTeamName, -value, description, user, sourceTeam.getCash() - value, timestamp)));
             sourceTeam.setTransactions(transactions);
         } catch (Exception e) {
             return "There was a problem with this transaction, please try again later";
@@ -194,11 +181,16 @@ public class TransactionController {
 
         try {
             List<Transaction> transactionsDest = destTeam.getTransactions();
-            transactionsDest.add(transactionRepository.save(new Transaction(sourceTeam.getName(), destTeamName, value, description)));
+            transactionsDest.add(transactionRepository.save(new Transaction(sourceTeam.getName(),
+                    destTeamName, value, description, user, sourceTeam.getCash() + value, timestamp)));
             destTeam.setTransactions(transactionsDest);
         } catch (Exception e) {
             return "There was a problem with this transaction, please try again later";
         }
+
+        // Update the cash for each team
+        sourceTeam.setCash(sourceTeam.getCash() - value);
+        destTeam.setCash(destTeam.getCash() + value);
 
         try {
             teamRepository.save(sourceTeam);
@@ -220,21 +212,15 @@ public class TransactionController {
             return null;
         }
         try {
-            List<SimpleTransaction> simpleTransactions = new ArrayList<>();
-            team.getTransactions().forEach((transaction) -> {
-                        SimpleTransaction transaction1 = new SimpleTransaction(transaction.getSourceTeam(), transaction.getDestTeamName(), transaction.getDescription(), transaction.getAmount());
-                        simpleTransactions.add(
-                                transaction1);
-                    }
-            );
-            return simpleTransactions;
+            return createSimpleTransactionList(team.getTransactions());
         } catch (Exception e) {
             return null;
         }
     }
 
     @RequestMapping(value = "/buy", method = RequestMethod.POST)
-    public String buyProducts(@RequestBody String payload, @RequestHeader Map<String, String> headers) throws IOException {
+    public String buyProducts(@RequestBody String payload, @RequestHeader Map<String,
+            String> headers) throws IOException {
         JsonNode jsonNode = objectMapper.readTree(payload);
 
         String token;
@@ -300,5 +286,16 @@ public class TransactionController {
 
         return "Your purchase was successful! \n Product: " + productName + "\n Quantity: " + quantity + "\n Please do not close this page and present this purchase to the NEEC team in the store!";
 
+    }
+
+    List<SimpleTransaction> createSimpleTransactionList(List<Transaction> transactions) {
+        List<SimpleTransaction> simpleTransactions = new ArrayList<>();
+        transactions.forEach((transaction) -> {
+                    SimpleTransaction transaction1 = new SimpleTransaction(transaction.getSourceTeam(), transaction.getDestTeamName(), transaction.getDescription(), transaction.getAmount());
+                    simpleTransactions.add(
+                            transaction1);
+                }
+        );
+        return simpleTransactions;
     }
 }

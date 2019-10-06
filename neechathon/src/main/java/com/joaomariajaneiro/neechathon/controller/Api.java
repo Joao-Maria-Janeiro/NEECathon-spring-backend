@@ -10,6 +10,7 @@ import com.joaomariajaneiro.neechathon.repository.TeamRepository;
 import com.joaomariajaneiro.neechathon.repository.UserRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
@@ -32,6 +33,9 @@ public class Api {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
 
     @RequestMapping(value = "/create", method = RequestMethod.POST)
     public String createTeam(@RequestBody String payload) throws IOException {
@@ -41,20 +45,19 @@ public class Api {
         String name = "";
         try {
             name = jsonNode.get("name").asText();
-        }catch (Exception e){
+        } catch (Exception e) {
             return "You need to provide team a name";
         }
 
         Team team = new Team();
-        try{
+        try {
             team.setName(name);
             teamRepository.save(team);
-        }catch (Exception e){
+        } catch (Exception e) {
             return "There was an error creating the team, the name has already been used";
         }
 
         List<User> users = team.getUsers();
-
 
 
         // Create User1
@@ -66,7 +69,7 @@ public class Api {
             user1 = 0;
         }
 
-        if(user1 == 1){
+        if (user1 == 1) {
             String password = "";
             try {
                 password = jsonNode.get("password1").asText();
@@ -99,9 +102,10 @@ public class Api {
             User user;
             try {
                 user = new User();
-                user.setEmail(email).setGitHub(gitHub).setLinkedIn(linkedIn).setPassword(password).setUsername(username).setTeam(team);
+                user.setEmail(email).setGitHub(gitHub).setLinkedIn(linkedIn).setPassword(passwordEncoder.encode(password)
+                ).setUsername(username).setTeam(team);
                 userRepository.save(user);
-            }catch (Exception e){
+            } catch (Exception e) {
                 teamRepository.delete(team);
                 return "A user with that email already exists " + email;
             }
@@ -118,7 +122,7 @@ public class Api {
             user1 = 0;
         }
 
-        if(user1 == 1){
+        if (user1 == 1) {
             String password = "";
             try {
                 password = jsonNode.get("password2").asText();
@@ -151,9 +155,9 @@ public class Api {
             User user2;
             try {
                 user2 = new User();
-                user2.setEmail(email).setGitHub(gitHub).setLinkedIn(linkedIn).setPassword(password).setUsername(username).setTeam(team);
+                user2.setEmail(email).setGitHub(gitHub).setLinkedIn(linkedIn).setPassword(passwordEncoder.encode(password)).setUsername(username).setTeam(team);
                 userRepository.save(user2);
-            }catch (Exception e){
+            } catch (Exception e) {
                 userRepository.deleteAll(users);
                 team.setUsers(new ArrayList<>());
                 teamRepository.save(team);
@@ -172,7 +176,7 @@ public class Api {
         } catch (Exception e) {
             user1 = 0;
         }
-        if(user1 == 1){
+        if (user1 == 1) {
             String password = "";
             try {
                 password = jsonNode.get("password3").asText();
@@ -204,10 +208,10 @@ public class Api {
 
             User user2;
             try {
-                 user2 = new User();
-                user2.setEmail(email).setGitHub(gitHub).setLinkedIn(linkedIn).setPassword(password).setUsername(username).setTeam(team);
+                user2 = new User();
+                user2.setEmail(email).setGitHub(gitHub).setLinkedIn(linkedIn).setPassword(passwordEncoder.encode(password)).setUsername(username).setTeam(team);
                 userRepository.save(user2);
-            }catch (Exception e){
+            } catch (Exception e) {
                 userRepository.deleteAll(users);
                 team.setUsers(new ArrayList<>());
                 teamRepository.save(team);
@@ -225,7 +229,7 @@ public class Api {
         } catch (Exception e) {
             user1 = 0;
         }
-        if(user1 == 1){
+        if (user1 == 1) {
             String password = "";
             try {
                 password = jsonNode.get("password4").asText();
@@ -258,9 +262,9 @@ public class Api {
             User user2;
             try {
                 user2 = new User();
-                user2.setEmail(email).setGitHub(gitHub).setLinkedIn(linkedIn).setPassword(password).setUsername(username).setTeam(team);
+                user2.setEmail(email).setGitHub(gitHub).setLinkedIn(linkedIn).setPassword(passwordEncoder.encode(password)).setUsername(username).setTeam(team);
                 userRepository.save(user2);
-            }catch (Exception e){
+            } catch (Exception e) {
                 userRepository.deleteAll(users);
                 team.setUsers(new ArrayList<>());
                 teamRepository.save(team);
@@ -272,69 +276,79 @@ public class Api {
         }
 
 
-
         try {
             team.setUsers(users);
-        }catch (Exception e){
+        } catch (Exception e) {
             return "There was an error creating the team";
         }
 
+        if (jsonNode.has("title")) {
+            String title = "";
+            try {
+                title = jsonNode.get("title").asText();
+            } catch (Exception e) {
+                userRepository.deleteAll(users);
+                team.setUsers(new ArrayList<>());
+                teamRepository.save(team);
+                teamRepository.delete(team);
+                return "You need to provide a project title";
+            }
 
-        String title = "";
-        try {
-            title = jsonNode.get("title").asText();
-        }catch (Exception e){
-            userRepository.deleteAll(users);
-            team.setUsers(new ArrayList<>());
-            teamRepository.save(team);
-            teamRepository.delete(team);
-            return "You need to provide a project title";
-        }
+            String description = "";
+            try {
+                title = jsonNode.get("description").asText();
+            } catch (Exception e) {
+                userRepository.deleteAll(users);
+                team.setUsers(new ArrayList<>());
+                teamRepository.save(team);
+                teamRepository.delete(team);
+                return "You need to provide a project description";
+            }
 
-        String description = "";
-        try {
-            title = jsonNode.get("description").asText();
-        }catch (Exception e){
-            userRepository.deleteAll(users);
-            team.setUsers(new ArrayList<>());
-            teamRepository.save(team);
-            teamRepository.delete(team);
-            return "You need to provide a project description";
-        }
+            String gitHubURL = "";
+            try {
+                gitHubURL = jsonNode.get("gitHubURL").asText();
+            } catch (Exception e) {
+                userRepository.deleteAll(users);
+                team.setUsers(new ArrayList<>());
+                teamRepository.save(team);
+                teamRepository.delete(team);
+                return "You need to provide a URL for the GitHub project";
+            }
 
-        String gitHubURL = "";
-        try {
-            gitHubURL = jsonNode.get("gitHubURL").asText();
-        }catch (Exception e){
-            userRepository.deleteAll(users);
-            team.setUsers(new ArrayList<>());
-            teamRepository.save(team);
-            teamRepository.delete(team);
-            return "You need to provide a URL for the GitHub project";
-        }
+            Project project;
+            try {
+                project = new Project();
+                project.setTeamName(team.getName()).setGitHubURL(gitHubURL).setTitle(title).setDescription(description).setTeam(team);
+                projectRepository.save(project);
+            } catch (Exception e) {
+                userRepository.deleteAll(users);
+                team.setUsers(new ArrayList<>());
+                teamRepository.save(team);
+                teamRepository.delete(team);
+                return "A project with that name already exists";
+            }
 
-        Project project;
-        try{
-            project = new Project();
-            project.setTeamName(team.getName()).setGitHubURL(gitHubURL).setTitle(title).setDescription(description).setTeam(team);
-            projectRepository.save(project);
-        }catch (Exception e){
-            userRepository.deleteAll(users);
-            team.setUsers(new ArrayList<>());
-            teamRepository.save(team);
-            teamRepository.delete(team);
-            return "A project with that name already exists";
-        }
-
-        try {
-            team.setProject(project);
-            teamRepository.save(team);
-        }catch (Exception e){
-            userRepository.deleteAll(users);
-            team.setUsers(new ArrayList<>());
-            teamRepository.save(team);
-            teamRepository.delete(team);
-            return "There was an error creating the team";
+            try {
+                team.setProject(project);
+                teamRepository.save(team);
+            } catch (Exception e) {
+                userRepository.deleteAll(users);
+                team.setUsers(new ArrayList<>());
+                teamRepository.save(team);
+                teamRepository.delete(team);
+                return "There was an error creating the team";
+            }
+        } else {
+            try {
+                teamRepository.save(team);
+            } catch (Exception e) {
+                userRepository.deleteAll(users);
+                team.setUsers(new ArrayList<>());
+                teamRepository.save(team);
+                teamRepository.delete(team);
+                return "There was an error creating the team";
+            }
         }
 
         return "All users, project and team were created successfully!!";
