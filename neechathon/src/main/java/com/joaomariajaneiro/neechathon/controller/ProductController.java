@@ -15,7 +15,7 @@ import java.io.IOException;
 import java.util.Map;
 
 @Slf4j
-@RequestMapping("/api")
+@RequestMapping("/product")
 @RestController
 @CrossOrigin
 public class ProductController {

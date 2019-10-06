@@ -7,6 +7,7 @@ import java.time.LocalDateTime;
 @Table(name = "PURCHASE")
 public class Purchase {
 
+    @Id
     @Column(name = "PURCHASE_ID")
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
@@ -14,7 +15,7 @@ public class Purchase {
     @Column(name = "PURCHASE_TEAM")
     private String teamName;
 
-    @Column(name = "PURCHASE_PRODUCT")
+    @ManyToOne
     private Product product;
 
     @Column(name = "PURCHASE_QUANTITY")
@@ -23,7 +24,7 @@ public class Purchase {
     @Column(name = "PURCHASE_AMOUNT")
     private Long totalAmount;
 
-    @Column(name = "PURCHASE_USER")
+    @ManyToOne
     private User user;
 
     @Column(name = "PURCHASE_SOURCE_TEAM_CASH")

@@ -2,7 +2,6 @@ package com.joaomariajaneiro.neechathon.model;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
-import java.util.Date;
 
 @Entity
 @Table(name = "TRANSACTION")
@@ -25,7 +24,7 @@ public class Transaction {
     @Column(name = "TRANSACTION_DESCRIPTION")
     private String description;
 
-    @Column(name = "TRANSACTION_USER")
+    @ManyToOne
     private User user;
 
     @Column(name = "TRANSACTION_SOURCE_TEAM_CASH")

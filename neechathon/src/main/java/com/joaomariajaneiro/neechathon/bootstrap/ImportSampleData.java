@@ -64,6 +64,7 @@ public class ImportSampleData implements ImportData {
         users.add(user2);
         team1.setUsers(users);
         team1.setProject(project);
+        team1.setAdmin(true);
         teamRepository.save(team1);
 
         List<Product> products = new ArrayList<>();
