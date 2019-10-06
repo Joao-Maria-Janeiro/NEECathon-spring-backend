@@ -30,7 +30,7 @@ public class ProductController {
 
     @RequestMapping(value = "/", method = RequestMethod.GET)
     public @ResponseBody
-    Iterable<Product> getAllProducts(@RequestHeader Map<String, String> headers) {
+    Iterable<Product> getAllProducts() {
         return productRepository.findAll();
     }
 
@@ -62,6 +62,7 @@ public class ProductController {
             } catch (Exception e) {
                 return "There was an error creating the product, did you set all fields?";
             }
+
             try {
                 productRepository.save(product);
             } catch (Exception e) {

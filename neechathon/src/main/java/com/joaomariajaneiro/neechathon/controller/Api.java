@@ -85,18 +85,21 @@ public class Api {
             }
 
             String linkedIn = "";
-            try {
-                linkedIn = jsonNode.get("linkedIn1").asText();
-            } catch (Exception e) {
-                return "You need to provide a link to your linkedIn profile URL (if you don't have one we strongly recommend you create one)";
+            if (jsonNode.has("linkedIn1")) {
+                try {
+                    linkedIn = jsonNode.get("linkedIn1").asText();
+                } catch (Exception e) {
+                    return "You need to provide a link to your linkedIn profile URL (if you don't have one we strongly recommend you create one)";
+                }
             }
 
-
             String gitHub = "";
-            try {
-                gitHub = jsonNode.get("gitHub1").asText();
-            } catch (Exception e) {
-                return "You need to provide your GitHub profile URL (if you don't have one we strongly recommend you create one)";
+            if (jsonNode.has("gitHub1")) {
+                try {
+                    gitHub = jsonNode.get("gitHub1").asText();
+                } catch (Exception e) {
+                    return "You need to provide your GitHub profile URL (if you don't have one we strongly recommend you create one)";
+                }
             }
 
             User user;
@@ -138,18 +141,21 @@ public class Api {
             }
 
             String linkedIn = "";
-            try {
-                linkedIn = jsonNode.get("linkedIn2").asText();
-            } catch (Exception e) {
-                return "You need to provide a link to your linkedIn profile URL (if you don't have one we strongly recommend you create one)";
+            if (jsonNode.has("linkedIn2")) {
+                try {
+                    linkedIn = jsonNode.get("linkedIn2").asText();
+                } catch (Exception e) {
+                    return "You need to provide a link to your linkedIn profile URL (if you don't have one we strongly recommend you create one)";
+                }
             }
 
-
             String gitHub = "";
-            try {
-                gitHub = jsonNode.get("gitHub2").asText();
-            } catch (Exception e) {
-                return "You need to provide your GitHub profile URL (if you don't have one we strongly recommend you create one)";
+            if (jsonNode.has("gitHub2")) {
+                try {
+                    gitHub = jsonNode.get("gitHub2").asText();
+                } catch (Exception e) {
+                    return "You need to provide your GitHub profile URL (if you don't have one we strongly recommend you create one)";
+                }
             }
 
             User user2;
@@ -192,18 +198,21 @@ public class Api {
             }
 
             String linkedIn = "";
-            try {
-                linkedIn = jsonNode.get("linkedIn3").asText();
-            } catch (Exception e) {
-                return "You need to provide a link to your linkedIn profile URL (if you don't have one we strongly recommend you create one)";
+            if (jsonNode.has("linkedIn3")) {
+                try {
+                    linkedIn = jsonNode.get("linkedIn3").asText();
+                } catch (Exception e) {
+                    return "You need to provide a link to your linkedIn profile URL (if you don't have one we strongly recommend you create one)";
+                }
             }
 
-
             String gitHub = "";
-            try {
-                gitHub = jsonNode.get("gitHub3").asText();
-            } catch (Exception e) {
-                return "You need to provide your GitHub profile URL (if you don't have one we strongly recommend you create one)";
+            if (jsonNode.has("gitHub3")) {
+                try {
+                    gitHub = jsonNode.get("gitHub3").asText();
+                } catch (Exception e) {
+                    return "You need to provide your GitHub profile URL (if you don't have one we strongly recommend you create one)";
+                }
             }
 
             User user2;
@@ -244,19 +253,24 @@ public class Api {
                 return "You need to provide an email";
             }
 
+
             String linkedIn = "";
-            try {
-                linkedIn = jsonNode.get("linkedIn4").asText();
-            } catch (Exception e) {
-                return "You need to provide a link to your linkedIn profile URL (if you don't have one we strongly recommend you create one)";
+            if (jsonNode.has("linkedIn4")) {
+                try {
+                    linkedIn = jsonNode.get("linkedIn4").asText();
+                } catch (Exception e) {
+                    return "You need to provide a link to your linkedIn profile URL (if you don't have one we strongly recommend you create one)";
+                }
             }
 
 
             String gitHub = "";
-            try {
-                gitHub = jsonNode.get("gitHub4").asText();
-            } catch (Exception e) {
-                return "You need to provide your GitHub profile URL (if you don't have one we strongly recommend you create one)";
+            if (jsonNode.has("gitHub4")) {
+                try {
+                    gitHub = jsonNode.get("gitHub4").asText();
+                } catch (Exception e) {
+                    return "You need to provide your GitHub profile URL (if you don't have one we strongly recommend you create one)";
+                }
             }
 
             User user2;
